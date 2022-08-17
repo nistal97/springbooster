@@ -365,6 +365,7 @@ public class Annotation extends SpringBooster.Base implements ExportPoint {
         public static final String DELETEMAPPING = "org.springframework.web.bind.annotation.DeleteMapping";
         public static final String REQBODY = "org.springframework.web.bind.annotation.RequestBody";
         public static final String VALIDATOR = "org.springframework.validation.annotation.Validated";
+        public static final String CROSSREGION = "org.springframework.web.bind.annotation.CrossOrigin";
 
         public static final Annotation generateRestControllerAnnotation() {
             return new Annotation(RESTCONTROLLER);
@@ -400,6 +401,10 @@ public class Annotation extends SpringBooster.Base implements ExportPoint {
         public static final Annotation generateValidatorAnnotation() {
             return new Annotation(VALIDATOR);
         }
+        public static final Annotation generateCrossOriginAnnotation() {
+            return new Annotation(CROSSREGION);
+        }
+
     }
 
     public static class TestAnnotationGenerator {

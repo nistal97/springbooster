@@ -140,6 +140,7 @@ public class Controller extends SpringBooster.Base implements ExportPoint {
 
     protected void addControllerAnnotation(GenericType t) {
         t.addAnnotation(Annotation.ControllerAnnotationGenerator.generateRestControllerAnnotation());
+        t.addAnnotation(Annotation.ControllerAnnotationGenerator.generateCrossOriginAnnotation());
         t.addAnnotation(Annotation.ControllerAnnotationGenerator.generateRequestMappingAnnotation(path));
     }
 
