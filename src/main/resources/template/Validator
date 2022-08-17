@@ -1,0 +1,68 @@
+package org.springboot.initializer.controller;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+@RestControllerAdvice
+public class Validator {
+    private static final String BAD_REQUEST_MSG = "Request Validation Error";
+
+    public static class ResultInfo<T>{
+        HttpStatus status;
+        String message;
+
+        public ResultInfo(HttpStatus status, String message) {
+            this.status = status;
+            this.message = message;
+        }
+
+        public String msg() {
+            return "{\"msg\":" + message + "}";
+        }
+    }
+
+    private ResponseEntity output(ResultInfo resultInfo) {
+        return ResponseEntity.status(resultInfo.status).body(resultInfo.msg());
+    }
+
+    //form submit
+    @ExceptionHandler(BindException.class)
+    public ResponseEntity bindExceptionHandler(BindException e) {
+        List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
+        List<String> collect = fieldErrors.stream()
+                .map(o -> "\"" + o.getField() + "\":" + o.getDefaultMessage())
+                .collect(Collectors.toList());
+        return output(new ResultInfo(HttpStatus.BAD_REQUEST, collect.toString()));
+    }
+
+    //handle json
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e) {
+        List<FieldError> fieldErrors = e.getBindingResult().getFieldErrors();
+        List<String> collect = fieldErrors.stream()
+                .map(o -> "\"" + o.getField() + "\":" + o.getDefaultMessage())
+                .collect(Collectors.toList());
+        return output(new ResultInfo(HttpStatus.BAD_REQUEST, collect.toString()));
+    }
+    //single parameter
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity constraintViolationExceptionHandler(ConstraintViolationException e) {
+        Set<ConstraintViolation<?>> constraintViolations = e.getConstraintViolations();
+        List<String> collect = constraintViolations.stream()
+                .map(o -> o.getMessage())
+                .collect(Collectors.toList());
+        return output(new ResultInfo(HttpStatus.BAD_REQUEST, collect.toString()));
+    }
+
+}

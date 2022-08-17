@@ -1,0 +1,81 @@
+package org.springboot.initializer.service;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public abstract class BaseServiceImpl {
+    private static Logger logger = LoggerFactory.getLogger(BaseServiceImpl.class);
+
+    private String[] splitDTOField(String field) {
+        int n = 0;
+        for (int i = 0; i < field.length();i ++) {
+            char c = field.charAt(i);
+            if (c >= 'A' && c <= 'Z') {
+                n = i;
+                break;
+            }
+        }
+        String[] arr = new String[2];
+        arr[0] = field.substring(0, n);
+        arr[1] = field.substring(n);
+        return arr;
+    }
+
+    protected PagingContext decoratePagingContext(PagingContext pagingContext) {
+        final List<String> ascs = new ArrayList();
+        pagingContext.getSortasc().forEach(f->{
+            String[] arr = splitDTOField(f);
+            ascs.add("Q" + arr[0].substring(0, 1).toUpperCase() + arr[0].substring(1) + "." + arr[0] + "#" + arr[1].toLowerCase());
+        });
+        pagingContext.setSortasc(ascs);
+        final List<String> descs = new ArrayList();
+        pagingContext.getSortdesc().forEach(f->{
+            String[] arr = splitDTOField(f);
+            descs.add("Q" + arr[0].substring(0, 1).toUpperCase() + arr[0].substring(1) + "." + arr[0] + "#" + arr[1].toLowerCase());
+        });
+        pagingContext.setSortdesc(descs);
+        pagingContext.getFilters().forEach(f->{
+            String[] arr = splitDTOField(f.getField());
+            f.setField("Q" + arr[0].substring(0, 1).toUpperCase() + arr[0].substring(1) + "." + arr[0] + "#" + arr[1].toLowerCase());
+        });
+
+        return pagingContext;
+    }
+
+    protected <T> ResponseEntity save(T t, CrudRepository<T, Long> repo) {
+        try {
+            repo.save(t);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (DataIntegrityViolationException ive) {
+            logger.error("Error occured in Service::save ", ive);
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        } catch (DataAccessException dae) {
+            logger.error("Error occured in Service::save ", dae);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Service unavailable.Please retry");
+        }
+    }
+
+    protected <T> ResponseEntity delete(T t, CrudRepository<T, Long> repo) {
+        try {
+            repo.delete(t);
+        } catch (DataAccessException dae) {
+            logger.error("Error occured in Service::delete ", dae);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Service unavailable.Please retry");
+        }
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+}

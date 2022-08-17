@@ -1,0 +1,7 @@
+/build/
+/gradle/
+/out/
+.idea
+.gradle
+**/generated/
+src/test/resources/*.yaml
