@@ -18,29 +18,6 @@ public class ServiceMetaData extends SpringBooster.Base {
     @JsonIgnore
     private Map<String, Service> serviceMap = new HashMap<>();
 
-    public GenericType exportBaseService() {
-        return new GenericType(){
-            @Override
-            public void serialize(int lineNum, String line, Path destPath) throws Exception  {
-                String[] fqcn = BuiltInMethodFunc.extractPackageAndName(baseService);
-                if (lineNum == 0) {
-                    Files.writeString(destPath, "", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-                    Files.writeString(destPath, addLineEnd("package " + fqcn[0] + ";"), StandardOpenOption.CREATE,
-                            StandardOpenOption.APPEND);
-                    Files.writeString(destPath, addLineEnd("import " + ConfigGraph.getGraph().getRepo().getPagingContext()
-                                    + ";"), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
-                } else {
-                    Files.writeString(destPath, addLineEnd(line), StandardOpenOption.CREATE,
-                            StandardOpenOption.APPEND);
-                }
-            }
-
-            private final String addLineEnd(String str) {
-                return str + "\n";
-            }
-        };
-    }
-
     public List<Service> getServices() {
         return services;
     }

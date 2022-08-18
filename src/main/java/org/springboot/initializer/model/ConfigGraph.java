@@ -8,6 +8,7 @@ import org.springboot.initializer.controller.ControllerMetaData;
 import org.springboot.initializer.repo.QueryDSLRepo;
 import org.springboot.initializer.repo.RepoMetaData;
 import org.springboot.initializer.repo.Repository;
+import org.springboot.initializer.service.GraphQLSchemer;
 import org.springboot.initializer.service.Service;
 import org.springboot.initializer.service.ServiceMetaData;
 import org.springboot.initializer.test.AutoTester;
@@ -16,6 +17,7 @@ import org.springboot.initializer.util.BuiltInMethodFunc;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ConfigGraph extends SpringBooster.Base implements ExportSerializer {
@@ -45,6 +47,8 @@ public class ConfigGraph extends SpringBooster.Base implements ExportSerializer 
     @Override
     public void doSerialize(Path path) throws Exception {
         if (model != null) {
+            Path graphqlPath = Paths.get(path + "/graphqls/");
+
             if (!Strings.isBlank(model.getBasemodel())) model.exportBaseModel().serialize(path);
             //render enums
             for (ModelMetaData.Enum e : model.getEnums()) {
@@ -83,11 +87,12 @@ public class ConfigGraph extends SpringBooster.Base implements ExportSerializer 
             if (!Strings.isBlank(service.getBaseService())) {
                 Path srcPath = Path.of(ClassLoader.getSystemResource("template/BaseServiceImpl").toURI());
                 Path destPath = Paths.get("src/main/generated/" + BuiltInMethodFunc.convertFQCN2Path(service.getBaseService()) + ".java");
-                service.exportBaseService().serialize(srcPath, destPath);
+                new JavaFileSerializer(service.getBaseService()).serialize(srcPath, destPath);
             }
             //exportviews
             QueryDSLRepo.exportBaseRepo().serialize(path);
             for (Service service : service.getServices()) {
+                List<GenericType> dtoImpls = new ArrayList<>();
                 if (!service.getViews().isEmpty()) {
                     String[] fqcn = BuiltInMethodFunc.extractPackageAndName(service.getFqcn());
                     QueryDSLRepo repo = new QueryDSLRepo(fqcn[1].split("Service")[0] + "QueryRepo", service.getViews());
@@ -97,9 +102,16 @@ public class ConfigGraph extends SpringBooster.Base implements ExportSerializer 
                         if (view.getDto() != null) {
                             view.getDto().serialize(path);
                             view.getDtoImpl().serialize(path);
+                            if (view.isGraphql()) {
+                                dtoImpls.add(view.getDtoImpl());
+                            }
                         }
                     }
                     repoType.serialize(path);
+                }
+                //graphql schema
+                if (!dtoImpls.isEmpty()) {
+                    new GraphQLSchemer.GraphQLSchemaSerializer(new GraphQLSchemer(service, dtoImpls)).serialize(graphqlPath);
                 }
                 service.serialize(path);
                 ((GenericType)service.getImpl().export()).serialize(path);
@@ -114,7 +126,7 @@ public class ConfigGraph extends SpringBooster.Base implements ExportSerializer 
             if (!Strings.isBlank(controller.getValidator())) {
                 Path srcPath = Path.of(ClassLoader.getSystemResource("template/Validator").toURI());
                 Path destPath = Paths.get("src/main/generated/" + BuiltInMethodFunc.convertFQCN2Path(controller.getValidator()) + ".java");
-                controller.exportValidator().serialize(srcPath, destPath);
+                new JavaFileSerializer(controller.getValidator()).serialize(srcPath, destPath);
             }
             for (Controller controller : controller.getControllers()) {
                 ((GenericType)controller.export()).serialize(path);

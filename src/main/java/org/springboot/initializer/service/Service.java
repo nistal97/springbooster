@@ -98,6 +98,7 @@ public class Service extends GenericInterface {
         private GenericInterface dto;
         private GenericType dtoImpl;
         private boolean dtoViewParam = false;
+        private boolean graphql = false;
 
         public static final String[] GENERATOR = new String[]{"querydsl", "customrepo"};
         public static final String[] ACTION = new String[]{"get", "update", "delete"};
@@ -196,6 +197,14 @@ public class Service extends GenericInterface {
 
         public void setDtoViewParam(boolean dtoViewParam) {
             this.dtoViewParam = dtoViewParam;
+        }
+
+        public boolean isGraphql() {
+            return graphql;
+        }
+
+        public void setGraphql(boolean graphql) {
+            this.graphql = graphql;
         }
 
         @Override
@@ -590,10 +599,20 @@ public class Service extends GenericInterface {
 
             Set<String> interfaces = new HashSet<>();
             interfaces.add(fqcn);
+            addGraphQLInterfaceIfApplicable(interfaces);
             GenericType t = new GenericType(ConfigGraph.getGraph().getService().getBaseService(), interfaces, fields,
                     methods, n[0] + ".impl", n[1] + "Impl", false, Modifier.PUBLIC);
             t.addAnnotation(Annotation.ServiceAnnotationGenerator.generateServiceAnnotation());
             return t;
+        }
+
+        private void addGraphQLInterfaceIfApplicable(Set<String> interfaces) {
+            views.forEach(view -> {
+                if (view.isGraphql()) {
+                    interfaces.add("graphql.kickstart.tools.GraphQLQueryResolver");
+                    return;
+                }
+            });
         }
 
         @Override

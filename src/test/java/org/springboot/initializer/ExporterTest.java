@@ -22,7 +22,7 @@ import java.util.Set;
 
 public class ExporterTest {
 
-    private static final Path TEST_JAVA_PATH = Paths.get("src/main/generated");
+    private static final Path SRC_GENERATED_PATH = Paths.get("src/main/generated");
 
     @Test
     public void testToString() {
@@ -64,7 +64,7 @@ public class ExporterTest {
         fields.add(f3);
 
         GenericType t = new GenericType(null, null, fields, null, "org.springboot.initializer", "GenericTestType");
-        t.serialize(TEST_JAVA_PATH);
+        t.serialize(SRC_GENERATED_PATH);
     }
 
     @Test
@@ -82,7 +82,7 @@ public class ExporterTest {
 
         ConfigGraph graph = new ConfigGraph(model, repo, service, controller, mock);
         ConfigGraph.setGraph(graph);
-        graph.serialize(TEST_JAVA_PATH);
+        graph.serialize(SRC_GENERATED_PATH);
     }
 
 }
