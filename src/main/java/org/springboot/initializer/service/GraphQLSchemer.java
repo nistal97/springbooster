@@ -61,7 +61,7 @@ public class GraphQLSchemer {
                 int i = 0;
                 for (String k : m.getParams().keySet()) {
                     if (i > 0) paramSb.append(", ");
-                    paramSb.append(k).append(":").append(m.getParams().get(k));
+                    paramSb.append(k).append(":").append(mapGraphQLType(k, m.getParams().get(k).toString()));
                     i ++;
                 }
                 Files.writeString(path, addLineEnd("    " + m.getName() + "(" +  paramSb.toString() + ") : " + returnSignature),
@@ -71,7 +71,8 @@ public class GraphQLSchemer {
                     StandardOpenOption.APPEND);
         }
 
-        private String mapGraphQLType(String typeName) {
+        private String mapGraphQLType(String fieldName, String typeName) {
+            if (fieldName.endsWith("Id")) return "ID!";
             if (TypeUtil.isEnum(typeName)) return "String";
             switch (typeName) {
                 case "int":
@@ -97,12 +98,7 @@ public class GraphQLSchemer {
                 for (ExportPoint e : dtoImpl.getFields()) {
                     Field f = (Field) e;
                     String content = "  " + f.getName() + " : ";
-                    if (f.getName().endsWith("Id")) {
-                        content += "ID!";
-                    } else {
-                        content += mapGraphQLType(f.getFieldTypeName());
-                    }
-                    content += ",";
+                    content += mapGraphQLType(f.getName(), f.getFieldTypeName()) + ",";
                     Files.writeString(path, addLineEnd(content), StandardOpenOption.CREATE,
                             StandardOpenOption.APPEND);
                 }

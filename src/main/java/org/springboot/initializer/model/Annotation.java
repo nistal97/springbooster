@@ -402,7 +402,9 @@ public class Annotation extends SpringBooster.Base implements ExportPoint {
             return new Annotation(VALIDATOR);
         }
         public static final Annotation generateCrossOriginAnnotation() {
-            return new Annotation(CROSSREGION);
+            Map<String, Object> m = new HashMap<>();
+            m.put("origins", "*");
+            return new Annotation(CROSSREGION, m);
         }
 
     }
