@@ -35,7 +35,7 @@ public abstract class BaseModel extends SpringBooster.Base {
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, type, typeName);
+        return Objects.hash(name);
     }
 
     protected boolean check() {

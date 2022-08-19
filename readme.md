@@ -1,6 +1,8 @@
-### springbooster: auto generation for springboot app
+# springbooster: auto generation for springboot app
 
-- JPA
+<a href="CHANGELOG.md">ChangeLog</a>
+
+### JPA
   - Query
     - Single table
       - `if !projection && !(large resultset) && !(paging/sorting)` `JPA Built-in Query` 
@@ -16,6 +18,10 @@
     - `if projection update` `QueryDSL`
       - > QueryDSL not support update conjunction join for now, use customizedRepo instead 
     - `transactional service`
-- Unit Test
+
+### Unit Test
   - save/saveall: clone detached individual list as no join
   - With Query: Build a full relation graph and store in DB
+
+### SpringBoot Validation
+  - inplace configuration

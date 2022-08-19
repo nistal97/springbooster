@@ -91,6 +91,7 @@ public class ConfigGraph extends SpringBooster.Base implements ExportSerializer 
             }
             //exportviews
             QueryDSLRepo.exportBaseRepo().serialize(path);
+            List<Method> graphQLQuerySignature = new ArrayList<>();
             for (Service service : service.getServices()) {
                 List<GenericType> dtoImpls = new ArrayList<>();
                 if (!service.getViews().isEmpty()) {
@@ -104,6 +105,7 @@ public class ConfigGraph extends SpringBooster.Base implements ExportSerializer 
                             view.getDtoImpl().serialize(path);
                             if (view.isGraphql()) {
                                 dtoImpls.add(view.getDtoImpl());
+                                graphQLQuerySignature.addAll((List<Method>)view.export());
                             }
                         }
                     }
@@ -115,6 +117,9 @@ public class ConfigGraph extends SpringBooster.Base implements ExportSerializer 
                 }
                 service.serialize(path);
                 ((GenericType)service.getImpl().export()).serialize(path);
+            }
+            if (!graphQLQuerySignature.isEmpty()) {
+                new GraphQLSchemer.GraphQLSchemaSerializer().serializeRootGraph(graphQLQuerySignature, graphqlPath);
             }
 
             //serialize repo

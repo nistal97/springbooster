@@ -32,7 +32,23 @@ public class Controller extends SpringBooster.Base implements ExportPoint {
         for (Service s : services) {
             //find by fqcn
             Service service = ConfigGraph.getGraph().getService().getServiceMap().get(s.getFqcn());
-            Set<ExportPoint> serviceMethods = service.getMethods();
+            Set<ExportPoint> allmethods = service.getMethods(), serviceMethods = new HashSet<>();
+            //filter graphql
+            for (ExportPoint e : allmethods) {
+                Method m = (Method) e;
+                boolean isGraphQLMethod = false;
+                loop : for (Service.View view : service.getViews()) {
+                    if (view.isGraphql()) {
+                        for (Method graphMethod : view.getGraphQLMethods()) {
+                            if (graphMethod.getName().equals(m.getName())) {
+                                isGraphQLMethod = true;
+                                break loop;
+                            }
+                        }
+                    }
+                }
+                if (!isGraphQLMethod) serviceMethods.add(m);
+            }
 
             //fields
             String[] repoNaming = BuiltInMethodFunc.extractPackageAndName(s.getFqcn());

@@ -26,6 +26,7 @@ public class Service extends GenericInterface {
     private List<String> repos = new ArrayList<>();
     private List<GenericType> queryDSLRepos = new ArrayList<>();
     private List<String> builtinMethods = new ArrayList<>();
+    private List<Method> graphQLMethods = new ArrayList<>();
     private List<View> views = new ArrayList<>();
 
     public Service(){
@@ -94,6 +95,7 @@ public class Service extends GenericInterface {
         private List<String> sql = new ArrayList<>();
         private String action = ACTION[0];
         private List<View> graphs = new ArrayList<>();
+        private Set<Method> graphQLMethods = new HashSet<>();
         private Map<String, List<String>> dtoFields = new LinkedHashMap<>();
         private GenericInterface dto;
         private GenericType dtoImpl;
@@ -205,6 +207,10 @@ public class Service extends GenericInterface {
 
         public void setGraphql(boolean graphql) {
             this.graphql = graphql;
+        }
+
+        public Set<Method> getGraphQLMethods() {
+            return graphQLMethods;
         }
 
         @Override
@@ -392,6 +398,9 @@ public class Service extends GenericInterface {
                 dtoImpl = null;
             }
 
+            if (isGraphql()) {
+                graphQLMethods.addAll(methods);
+            }
             return methods;
         }
 
