@@ -26,7 +26,6 @@ public class Service extends GenericInterface {
     private List<String> repos = new ArrayList<>();
     private List<GenericType> queryDSLRepos = new ArrayList<>();
     private List<String> builtinMethods = new ArrayList<>();
-    private List<Method> graphQLMethods = new ArrayList<>();
     private List<View> views = new ArrayList<>();
 
     public Service(){
@@ -52,21 +51,23 @@ public class Service extends GenericInterface {
 
     @Override
     protected void decorateBuilder(TypeSpec.Builder builder) throws Exception {
+        Set<ExportPoint> decorates = new HashSet<>();
         //add builtin methods
-        methods.addAll(getBuiltInMethod(true, false));
+        decorates.addAll(getBuiltInMethod(true, false));
         //add QueryDSLmethods
         queryDSLRepos.forEach(repo -> {
             repo.getMethods().forEach(e -> {
                 Method m = new Method((Method) e);
                 m.setbAbstract(true);
                 m.clearStatements();
-                methods.add(m);
+                decorates.add(m);
             });
         });
 
-        for (ExportPoint m : methods) {
+        for (ExportPoint m : decorates) {
             builder.addMethod((MethodSpec) m.export());
         }
+        methods.addAll(decorates);
     }
 
     private Set<ExportPoint> getBuiltInMethod(boolean bAbstract, boolean bOverride) {

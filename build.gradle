@@ -44,6 +44,7 @@ dependencies {
     implementation 'ch.vorburger.mariaDB4j:mariaDB4j-springboot:2.5.3'
     implementation 'org.mariadb.jdbc:mariadb-java-client:3.0.7'
     implementation 'org.junit.platform:junit-platform-suite-engine:1.8.2'
+    implementation 'com.auth0:java-jwt:4.0.0'
 
     implementation 'com.querydsl:querydsl-jpa:5.0.0'
     implementation 'com.querydsl:querydsl-core:5.0.0'

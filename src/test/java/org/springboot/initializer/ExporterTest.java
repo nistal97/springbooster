@@ -2,6 +2,7 @@ package org.springboot.initializer;
 
 import com.squareup.javapoet.ClassName;
 import org.junit.jupiter.api.Test;
+import org.springboot.initializer.auth.AuthMetaData;
 import org.springboot.initializer.controller.ControllerMetaData;
 import org.springboot.initializer.model.ConfigGraph;
 import org.springboot.initializer.model.Field;
@@ -73,6 +74,8 @@ public class ExporterTest {
         ModelMetaData model = (ModelMetaData) YamlClient.deserialize(modelstr, ModelMetaData.class);
         String repostr = Files.readString(Paths.get("src/test/resources/repo.yaml"));
         RepoMetaData repo = (RepoMetaData) YamlClient.deserialize(repostr, RepoMetaData.class);
+        String authstr = Files.readString(Paths.get("src/test/resources/auth.yaml"));
+        AuthMetaData auth = (AuthMetaData) YamlClient.deserialize(authstr, AuthMetaData.class);
         String servicestr = Files.readString(Paths.get("src/test/resources/service.yaml"));
         ServiceMetaData service = (ServiceMetaData) YamlClient.deserialize(servicestr, ServiceMetaData.class);
         String controllerstr = Files.readString(Paths.get("src/test/resources/controller.yaml"));
@@ -80,7 +83,7 @@ public class ExporterTest {
         String testerstr = Files.readString(Paths.get("src/test/resources/test.yaml"));
         MockMetaData mock = (MockMetaData) YamlClient.deserialize(testerstr, MockMetaData.class);
 
-        ConfigGraph graph = new ConfigGraph(model, repo, service, controller, mock);
+        ConfigGraph graph = new ConfigGraph(model, repo, service, auth, controller, mock);
         ConfigGraph.setGraph(graph);
         graph.serialize(SRC_GENERATED_PATH);
     }

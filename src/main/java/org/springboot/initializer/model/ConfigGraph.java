@@ -3,6 +3,7 @@ package org.springboot.initializer.model;
 import org.apache.logging.log4j.util.Strings;
 import org.springboot.initializer.ExportSerializer;
 import org.springboot.initializer.SpringBooster;
+import org.springboot.initializer.auth.AuthMetaData;
 import org.springboot.initializer.controller.Controller;
 import org.springboot.initializer.controller.ControllerMetaData;
 import org.springboot.initializer.repo.QueryDSLRepo;
@@ -25,6 +26,7 @@ public class ConfigGraph extends SpringBooster.Base implements ExportSerializer 
     private ModelMetaData model;
     private RepoMetaData repo;
     private ServiceMetaData service;
+    private AuthMetaData auth;
     private ControllerMetaData controller;
     private MockMetaData mock;
 
@@ -36,10 +38,12 @@ public class ConfigGraph extends SpringBooster.Base implements ExportSerializer 
         graph = graph1;
     }
 
-    public ConfigGraph(ModelMetaData model, RepoMetaData repo, ServiceMetaData service, ControllerMetaData controller, MockMetaData mock) {
+    public ConfigGraph(ModelMetaData model, RepoMetaData repo, ServiceMetaData service, AuthMetaData auth,
+                       ControllerMetaData controller, MockMetaData mock) {
         this.model = model;
         this.repo = repo;
         this.service = service;
+        this.auth = auth;
         this.controller = controller;
         this.mock = mock;
     }
@@ -115,8 +119,23 @@ public class ConfigGraph extends SpringBooster.Base implements ExportSerializer 
                 if (!dtoImpls.isEmpty()) {
                     new GraphQLSchemer.GraphQLSchemaSerializer(new GraphQLSchemer(service, dtoImpls)).serialize(graphqlPath);
                 }
+                //auth
+                boolean bGenerateAuthToken = false;
+                if (auth != null && auth.getTokenService() != null && auth.getTokenService().getFqcn() != null &&
+                        service.getFqcn().equals(auth.getTokenService().getFqcn())) {
+                    bGenerateAuthToken = true;
+                }
+                if (bGenerateAuthToken) {
+                    auth.getTokenService().setbAbstract(true);
+                    service.getMethods().add((Method) auth.getTokenService().export());
+                }
                 service.serialize(path);
-                ((GenericType)service.getImpl().export()).serialize(path);
+                GenericType serviceImplExported = (GenericType)service.getImpl().export();
+                if (bGenerateAuthToken) {
+                    auth.getTokenService().setbAbstract(false);
+                    serviceImplExported.getMethods().add((Method) auth.getTokenService().export());
+                }
+                serviceImplExported.serialize(path);
             }
             if (!graphQLQuerySignature.isEmpty()) {
                 new GraphQLSchemer.GraphQLSchemaSerializer().serializeRootGraph(graphQLQuerySignature, graphqlPath);
